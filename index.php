@@ -37,6 +37,35 @@ session_start();
 // *** Regenerate session id regularly to prevent session hacking ***
 //session_regenerate_id();
 
+/** Dec. 2024: Added autoload.
+ *    Name of class = SomethingClass.
+ *    Name of script: SomethingClass.php ***
+ */
+function custom_autoload($class_name)
+{
+    // Examples of autoload files:
+    // app/model/adresModel.php
+
+    // *** At this moment only a few classes are autoloaded. Under construction ***
+    //$classes = array('xxxxx');
+    // If all classes are autoloading, array check of classes will be removed.
+    //if (in_array($class_name, $classes) || substr($class_name, -5) == 'Model') {
+    // First start autoload using model scripts.
+    if (substr($class_name, -5) == 'Model') {
+        $dirs = array('app/model', 'test');
+        foreach ($dirs as $dir) {
+            $file = __DIR__ . '/' . $dir . '/' . lcfirst($class_name) . '.php';
+            if (file_exists($file)) {
+                require $file;
+                break;
+            } else {
+                //throw new Exception("The file $file does not exist.");
+            }
+        }
+    }
+}
+spl_autoload_register('custom_autoload');
+
 // *** Added dec. 2024 ***
 require __DIR__ . '/app/controller/indexController.php';
 $controllerObj = new IndexController();
@@ -115,7 +144,7 @@ if ($humo_option["url_rewrite"] == "j" && $index['tmp_path']) {
 }
 
 // *** To be used to show links in several pages ***
-include_once(__DIR__ . '/include/links.php');
+include_once(__DIR__ . '/include/link_cls.php');
 $link_cls = new Link_cls($uri_path);
 
 // *** Base controller ***
@@ -151,8 +180,8 @@ if ($page == 'address') {
     $controllerObj = new AnniversaryController();
     $data = $controllerObj->anniversary();
 } elseif ($page == 'cms_pages') {
-    require __DIR__ . '/app/controller/cms_pagesController.php';
-    $controllerObj = new CMS_pagesController($dbh, $user);
+    require __DIR__ . '/app/controller/cmsPagesController.php';
+    $controllerObj = new CmsPagesController($dbh, $user);
     $data = $controllerObj->list();
 } elseif ($page == 'cookies') {
     //
